@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 
@@ -12,7 +7,8 @@ output:
 
 
 Unzip the compressed data file, then read it in to R.
-```{r}
+
+```r
 unzip("activity.zip")
 activity <- read.csv("activity.csv")
 ```
@@ -25,7 +21,8 @@ Preprocessing
 - With the same subset (no NAs), group by interval for question 2. Call this "activity_q2".
 
 
-```{r message=FALSE, warning=FALSE}
+
+```r
 library(dplyr)
 
 activity_q1 <- activity %>%
@@ -45,20 +42,35 @@ activity_q2 <- activity %>%
 
 Use the activity_q1 dataframe for this question. First draw the histogram.
 
-```{r}
+
+```r
 hist(activity_q1$total_steps, 
      main="Histogram of total steps per day",
      xlab="Total daily steps")
 ```
 
+![](./PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+
 Calculate mean and median daily steps.
 
-```{r}
+
+```r
 mean(activity_q1$total_steps)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(activity_q1$total_steps)
 ```
 
-The mean number of steps per day is `r mean(activity_q1$total_steps)` and the median is `r median(activity_q1$total_steps)`.
+```
+## [1] 10765
+```
+
+The mean number of steps per day is 1.0766189\times 10^{4} and the median is 10765.
 
 
 ## What is the average daily activity pattern?
@@ -66,20 +78,28 @@ The mean number of steps per day is `r mean(activity_q1$total_steps)` and the me
 
 Use activity_q2 for this question. First plot the graph.
 
-```{r}
+
+```r
 plot(activity_q2$interval, activity_q2$avg_steps, type="l",
      main="Average number of steps by time interval",
      xlab="5 minute time interval",
      ylab="Average number of steps")
 ```
 
+![](./PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+
 Now find the value of "interval" where "avg_steps" takes its highest value.
 
-```{r}
+
+```r
 activity_q2$interval[activity_q2$avg_steps==max(activity_q2$avg_steps)]
 ```
 
-Interval number `r activity_q2$interval[activity_q2$avg_steps==max(activity_q2$avg_steps)]` has the highest mean number of steps.
+```
+## [1] 835
+```
+
+Interval number 835 has the highest mean number of steps.
 
 
 ## Imputing missing values
@@ -87,15 +107,21 @@ Interval number `r activity_q2$interval[activity_q2$avg_steps==max(activity_q2$a
 
 With the main "activity" dataframe, find the number of rows where steps is NA.
 
-```{r}
+
+```r
 nrow(activity[is.na(activity$steps),])
 ```
 
-There are `r nrow(activity[is.na(activity$steps),])` missing values in the dataset.
+```
+## [1] 2304
+```
+
+There are 2304 missing values in the dataset.
 
 For all rows with missing steps impute the mean number of steps for that time interval. Copy activity to a new dataframe called activity_impute. Loop through all the rows of these dataframe, replacing steps with the mean value wherever there was an NA in the original dataframe. Use the data from question 2 as a lookup table for the means. 
 
-```{r}
+
+```r
 activity_impute <- activity
 for(i in 1:nrow(activity))
   activity_impute$steps[i] <- ifelse(is.na(activity$steps[i]), 
@@ -105,7 +131,8 @@ for(i in 1:nrow(activity))
 
 Draw a histogram from the new dataframe.
 
-```{r}
+
+```r
 activity_q3 <- activity_impute %>%
   group_by(date) %>%
   summarise(total_steps=sum(steps))
@@ -115,11 +142,25 @@ hist(activity_q3$total_steps,
      xlab="Total daily steps")
 ```
 
+![](./PA1_template_files/figure-html/unnamed-chunk-9-1.png) 
+
 Calculate mean and median daily steps.
 
-```{r}
+
+```r
 mean(activity_q3$total_steps)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(activity_q3$total_steps)
+```
+
+```
+## [1] 10766.19
 ```
 
 The imputation method uses the mean number of steps per interval so the overall mean daily number of steps is unchanged. The median has changed slightly.
@@ -130,7 +171,8 @@ The imputation method uses the mean number of steps per interval so the overall 
 
 First create the two level factor denoting weekday or weekend. The instructions suggest weekdays() but the lubridate package seems easier. With lubridate::wday(), Sunday == 1 and Saturday == 7.
 
-```{r}
+
+```r
 library(lubridate)
 days <- factor(ifelse((wday(ymd(activity_impute$date))==1) | 
                       (wday(ymd(activity_impute$date))==7), "weekend", "weekday"), 
@@ -140,7 +182,8 @@ activity_impute <- cbind(activity_impute, days)
 
 Now summarise the data by interval and weekday / weekend and then plot time series graphs.
 
-```{r}
+
+```r
 activity_q4 <- activity_impute %>%
   group_by(interval, days) %>%
   summarise(avg_steps=mean(steps))
@@ -152,5 +195,6 @@ with(activity_q4, print(
             main="Average number of steps by time interval",
             xlab="5 minute time interval",
             ylab="Average number of steps")))
-
 ```
+
+![](./PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
